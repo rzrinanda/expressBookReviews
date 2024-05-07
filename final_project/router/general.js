@@ -22,20 +22,49 @@ public_users.post ('/register', (req, res) => {
 });
 
 // Get the book list available in the shop
-public_users.get ('/', function (req, res) {
-  res.send (JSON.stringify (books, null, 4));
+public_users.get ('/', async (req, res) => {
+  try {
+    const books = await getAllBooks ();
+    res.send (JSON.stringify (books, null, 4));
+  } catch (error) {
+    res.status (500).json ({message: error.message});
+  }
 });
+const getAllBooks = () => {
+  return new Promise (resolve => {
+    setTimeout (() => {
+      resolve (books);
+    }, 200);
+  });
+};
 
 // Get book details based on ISBN
 public_users.get ('/isbn/:isbn', function (req, res) {
-  res.send (JSON.stringify (books[req.params.isbn], null, 4));
+  getByISBN (req.params.isbn)
+    .then (result => {
+      res.send (JSON.stringify (result, null, 4));
+    })
+    .catch (err => {
+      res.status (500).json ({message: err.message});
+    });
+  // res.send (JSON.stringify (books[req.params.isbn], null, 4));
 });
+
+const getByISBN = isbn => {
+  return new Promise (resolve => {
+    setTimeout (() => {
+      resolve (books[isbn]);
+    }, 200);
+  });
+};
 
 // Get book details based on author
 public_users.get ('/author/:author', function (req, res) {
   res.send (
     JSON.stringify (
-      Object.values (books).filter (x => x.author == req.params.author),
+      Object.values (books).filter (
+        x => x.author.toLowerCase () === req.params.author.toLowerCase ()
+      ),
       null,
       4
     )
